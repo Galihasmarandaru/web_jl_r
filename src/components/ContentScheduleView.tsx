@@ -406,6 +406,9 @@ export function ContentScheduleView({
                           <IdeaSelector
                             currentIdeaId={idea.id}
                             onSelectIdea={(id) => handleSetContent(dateStr, id)}
+                            scheduleMap={schedule}
+                            currentYear={currentYear}
+                            currentMonth={currentMonth}
                             trigger={
                               <button
                                 type="button"
@@ -435,6 +438,9 @@ export function ContentScheduleView({
                         <IdeaSelector
                           currentIdeaId={null}
                           onSelectIdea={(id) => handleSetContent(dateStr, id)}
+                          scheduleMap={schedule}
+                          currentYear={currentYear}
+                          currentMonth={currentMonth}
                           trigger={
                             <button
                               type="button"
@@ -507,6 +513,9 @@ export function ContentScheduleView({
                         <IdeaSelector
                           currentIdeaId={null}
                           onSelectIdea={(id) => handleSetContent(dateStr, id)}
+                          scheduleMap={schedule}
+                          currentYear={currentYear}
+                          currentMonth={currentMonth}
                           trigger={
                             <button
                               type="button"
@@ -602,6 +611,9 @@ export function ContentScheduleView({
                           <IdeaSelector
                             currentIdeaId={ideaId ?? null}
                             onSelectIdea={(id) => handleSetContent(dateStr, id)}
+                            scheduleMap={schedule}
+                            currentYear={currentYear}
+                            currentMonth={currentMonth}
                             trigger={
                               <button
                                 type="button"
@@ -824,6 +836,9 @@ export function ContentScheduleView({
                       }
                     }
                   }}
+                  scheduleMap={schedule}
+                  currentYear={currentYear}
+                  currentMonth={currentMonth}
                   trigger={
                     <Button
                       variant="outline"
@@ -859,84 +874,210 @@ function IdeaSelector({
   currentIdeaId,
   onSelectIdea,
   trigger,
+  scheduleMap,
+  currentYear,
+  currentMonth,
 }: {
   currentIdeaId: number | null;
   onSelectIdea: (ideaIdStr: string) => void;
   trigger?: React.ReactNode;
+  scheduleMap?: Record<string, number | null>;
+  currentYear?: number;
+  currentMonth?: number;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [filterMode, setFilterMode] = React.useState<"all" | "unscheduled" | "scheduled">("all");
+
+  // Calculate schedule dates in current month for each idea
+  const currentMonthStr =
+    currentYear !== undefined && currentMonth !== undefined
+      ? `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`
+      : null;
+
+  const monthShort =
+    currentMonth !== undefined ? MONTH_NAMES_ID[currentMonth].slice(0, 3) : "";
+
+  // Map idea.id -> array of day numbers, e.g. [2, 9]
+  const scheduledDaysMap = React.useMemo(() => {
+    const map: Record<number, number[]> = {};
+    if (!scheduleMap || !currentMonthStr) return map;
+
+    Object.entries(scheduleMap).forEach(([dateStr, ideaId]) => {
+      if (ideaId && dateStr.startsWith(currentMonthStr)) {
+        const day = parseInt(dateStr.split("-")[2], 10);
+        if (!map[ideaId]) map[ideaId] = [];
+        map[ideaId].push(day);
+      }
+    });
+
+    Object.keys(map).forEach((idStr) => {
+      map[Number(idStr)].sort((a, b) => a - b);
+    });
+
+    return map;
+  }, [scheduleMap, currentMonthStr]);
+
+  const scheduledCount = React.useMemo(() => {
+    return CONTENT_IDEAS.filter((i) => (scheduledDaysMap[i.id]?.length ?? 0) > 0).length;
+  }, [scheduledDaysMap]);
+
+  const unscheduledCount = CONTENT_IDEAS.length - scheduledCount;
+
+  const filteredIdeas = React.useMemo(() => {
+    if (filterMode === "unscheduled") {
+      return CONTENT_IDEAS.filter((i) => (scheduledDaysMap[i.id]?.length ?? 0) === 0);
+    }
+    if (filterMode === "scheduled") {
+      return CONTENT_IDEAS.filter((i) => (scheduledDaysMap[i.id]?.length ?? 0) > 0);
+    }
+    return CONTENT_IDEAS;
+  }, [filterMode, scheduledDaysMap]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-2 max-h-80 overflow-y-auto">
-        <div className="px-2 py-1.5 border-b border-border mb-1">
-          <div className="text-xs font-bold text-foreground">
-            Pilih Ide untuk Tanggal Ini
+      <PopoverContent align="end" className="w-88 sm:w-96 p-2 max-h-96 overflow-y-auto">
+        <div className="px-2 py-1.5 border-b border-border mb-2 space-y-2">
+          <div>
+            <div className="text-xs font-bold text-foreground">
+              Pilih Ide untuk Tanggal Ini
+            </div>
+            <div className="text-[11px] text-muted-foreground">
+              Pilihan ide dari IDE.md terhubung dengan laporan
+            </div>
           </div>
-          <div className="text-[11px] text-muted-foreground">
-            Pilihan ide dari IDE.md terhubung dengan laporan
+
+          {/* FILTER CHIPS */}
+          <div className="flex items-center gap-1 p-0.5 rounded-lg bg-muted/60 text-[11px]">
+            <button
+              type="button"
+              onClick={() => setFilterMode("all")}
+              className={cn(
+                "flex-1 px-1.5 py-1 rounded-md text-center transition-colors cursor-pointer font-medium",
+                filterMode === "all"
+                  ? "bg-card text-foreground shadow-2xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Semua ({CONTENT_IDEAS.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterMode("unscheduled")}
+              className={cn(
+                "flex-1 px-1.5 py-1 rounded-md text-center transition-colors cursor-pointer font-medium",
+                filterMode === "unscheduled"
+                  ? "bg-card text-foreground shadow-2xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Belum ({unscheduledCount})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilterMode("scheduled")}
+              className={cn(
+                "flex-1 px-1.5 py-1 rounded-md text-center transition-colors cursor-pointer font-medium",
+                filterMode === "scheduled"
+                  ? "bg-card text-foreground shadow-2xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Terjadwal ({scheduledCount})
+            </button>
           </div>
         </div>
 
         <div className="space-y-0.5">
-          <button
-            type="button"
-            onClick={() => {
-              onSelectIdea("none");
-              setOpen(false);
-            }}
-            className={cn(
-              "w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer text-left",
-              currentIdeaId === null
-                ? "bg-rose-50 text-rose-700 font-bold"
-                : "text-muted-foreground hover:bg-muted/60"
-            )}
-          >
-            <span>(Kosongkan / Tidak Ada Konten)</span>
-            {currentIdeaId === null && <Check className="h-3.5 w-3.5" />}
-          </button>
-
-          <div className="my-1 border-t border-border" />
-
-          {CONTENT_IDEAS.map((idea) => {
-            const isSelected = currentIdeaId === idea.id;
-            return (
+          {filterMode === "all" && (
+            <>
               <button
-                key={idea.id}
                 type="button"
                 onClick={() => {
-                  onSelectIdea(String(idea.id));
+                  onSelectIdea("none");
                   setOpen(false);
                 }}
                 className={cn(
-                  "w-full flex items-start justify-between gap-2 px-2.5 py-2 rounded-md text-xs transition-colors cursor-pointer text-left",
-                  isSelected
-                    ? "bg-accent text-accent-foreground font-bold"
-                    : "hover:bg-muted/60 text-foreground"
+                  "w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer text-left",
+                  currentIdeaId === null
+                    ? "bg-rose-50 text-rose-700 font-bold dark:bg-rose-950/40 dark:text-rose-300"
+                    : "text-muted-foreground hover:bg-muted/60"
                 )}
               >
-                <div className="space-y-0.5 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    {idea.platform === "instagram" ? (
-                      <SiInstagram className="h-3 w-3 text-[#E4405F] shrink-0" />
-                    ) : (
-                      <SiTiktok className="h-3 w-3 text-zinc-900 shrink-0" />
-                    )}
-                    <span className="font-bold text-[11px]">#{idea.id}</span>
-                    <span className="truncate">{idea.title}</span>
-                  </div>
-                  <div className="text-[10px] text-muted-foreground truncate">
-                    {idea.format} · {idea.time}
-                  </div>
-                </div>
-
-                {isSelected && (
-                  <Check className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                )}
+                <span>(Kosongkan / Tidak Ada Konten)</span>
+                {currentIdeaId === null && <Check className="h-3.5 w-3.5" />}
               </button>
-            );
-          })}
+              <div className="my-1 border-t border-border" />
+            </>
+          )}
+
+          {filteredIdeas.length === 0 ? (
+            <div className="text-center py-6 text-xs text-muted-foreground italic">
+              Tidak ada konten pada kategori filter ini.
+            </div>
+          ) : (
+            filteredIdeas.map((idea) => {
+              const isSelected = currentIdeaId === idea.id;
+              const days = scheduledDaysMap[idea.id] || [];
+              const isScheduled = days.length > 0;
+
+              return (
+                <button
+                  key={idea.id}
+                  type="button"
+                  onClick={() => {
+                    onSelectIdea(String(idea.id));
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "w-full flex items-start justify-between gap-2 px-2.5 py-2 rounded-md text-xs transition-colors cursor-pointer text-left",
+                    isSelected
+                      ? "bg-accent text-accent-foreground font-bold"
+                      : "hover:bg-muted/60 text-foreground"
+                  )}
+                >
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {idea.platform === "instagram" ? (
+                        <SiInstagram className="h-3 w-3 text-[#E4405F] shrink-0" />
+                      ) : (
+                        <SiTiktok className="h-3 w-3 text-zinc-900 shrink-0" />
+                      )}
+                      <span className="font-bold text-[11px] shrink-0">#{idea.id}</span>
+                      <span className="truncate font-semibold">{idea.title}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-1.5 pt-0.5">
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        {idea.format} · {idea.time}
+                      </span>
+
+                      {/* BADGE PENANDA TERJADWAL ATAU BELUM */}
+                      {isScheduled ? (
+                        <Badge
+                          variant="success"
+                          className="text-[9px] px-1.5 py-0 font-bold shrink-0 bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
+                        >
+                          ✓ {days.length > 1 ? `${days.length}x: ` : ""}Tgl {days.join(", ")} {monthShort}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] px-1.5 py-0 text-muted-foreground/80 font-medium shrink-0 border-border/80"
+                        >
+                          Belum Terjadwal
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {isSelected && (
+                    <Check className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5 ml-1" />
+                  )}
+                </button>
+              );
+            })
+          )}
         </div>
       </PopoverContent>
     </Popover>
