@@ -59,11 +59,39 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+@page {
+  size: auto;
+  margin: 20mm 12mm 20mm 12mm;
+}
+
 @media print {
+  @page {
+    size: auto;
+    margin: 20mm 12mm 20mm 12mm;
+  }
+
   body {
     background-color: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
+
   .no-print {
     display: none !important;
+  }
+
+  main {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Hindari pemotongan modul analisis / kartu di tengah halaman cetak */
+  [data-slot="card"],
+  .rounded-2xl,
+  .rounded-xl {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }

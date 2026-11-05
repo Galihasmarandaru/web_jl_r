@@ -305,14 +305,6 @@ export function ContentScheduleView({
             <span className="text-muted-foreground">TikTok:</span>
             <span className="font-bold text-foreground">{ttCount}</span>
           </div>
-
-          <div className="rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-semibold flex items-center gap-1.5 shadow-2xs">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span className="text-muted-foreground">Hari Bebas:</span>
-            <span className="font-bold text-foreground">
-              {Math.max(0, daysInMonth - scheduledInThisMonth.length)} Hari
-            </span>
-          </div>
         </div>
       </div>
 
