@@ -161,7 +161,7 @@ export function ContentScheduleView({
               <CalendarIcon className="h-3 w-3" /> Jadwal Konten
             </Badge>
             <span className="text-xs text-muted-foreground">
-              Berdasarkan Rencana 30 Hari &amp; Data IDE.md
+              Berdasarkan Rencana 30 Hari
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight mt-1 text-foreground">
@@ -210,7 +210,7 @@ export function ContentScheduleView({
                 Kembalikan ke Jadwal Default?
               </div>
               <p className="text-[11px] text-muted-foreground mb-3 leading-relaxed">
-                Semua perubahan jadwal yang Anda lakukan akan direset kembali ke susunan awal jadwal IDE.md (10 konten per bulan, mayoritas Instagram).
+                Semua perubahan jadwal yang Anda lakukan akan direset kembali ke susunan awal jadwal default (10 konten per bulan, mayoritas Instagram).
               </p>
               <div className="flex items-center justify-end gap-2">
                 <Button
@@ -935,7 +935,7 @@ function IdeaSelector({
               Pilih Ide untuk Tanggal Ini
             </div>
             <div className="text-[11px] text-muted-foreground">
-              Pilihan ide dari IDE.md terhubung dengan laporan
+              Pilihan ide konten terhubung dengan laporan
             </div>
           </div>
 

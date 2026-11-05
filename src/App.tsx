@@ -172,7 +172,7 @@ export function App() {
                         Jadwal Konten
                       </span>
                       <span className="text-[10px] text-muted-foreground font-normal truncate">
-                        Kalender Publikasi IDE.md
+                        Kalender Publikasi
                       </span>
                     </div>
                   </SidebarMenuButton>
