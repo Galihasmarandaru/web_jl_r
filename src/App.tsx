@@ -19,6 +19,7 @@ import {
   CalendarDays,
   Check,
   ChevronsUpDown,
+  ExternalLink,
   Printer,
 } from "lucide-react";
 import { SiInstagram, SiTiktok } from "react-icons/si";
@@ -442,8 +443,50 @@ export function App() {
 
         {/* FOOTER */}
         <footer className="border-t border-border bg-card py-5 mt-auto no-print">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-xs text-muted-foreground">
-            <strong className="text-foreground">Jogja Lodge Kost</strong> — Laporan Performa Media Sosial &amp; Corong Konversi
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+            <div>
+              <strong className="text-foreground">Jogja Lodge Kost</strong> — Laporan Performa Media Sosial &amp; Corong Konversi
+            </div>
+
+            {/* DYNAMIC DATA SOURCE LINKS */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
+              <span className="text-muted-foreground font-medium">Sumber:</span>
+
+              {/* INSTAGRAM SOURCE */}
+              {(activeView === "schedule" || platform === "instagram") && (
+                <a
+                  href="https://business.facebook.com/latest/insights/overview?business_id=2049241912089830&asset_id=108529568964197&time_range=%257B%2522end%2522%253A%25222026-10-31%2522%252C%2522start%2522%253A%25222026-10-01%2522%257D&audience_tab=potential_audience"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-semibold text-foreground hover:text-primary hover:underline transition-colors cursor-pointer"
+                  title="Buka dashboard resmi Meta Business Suite Insights (Instagram)"
+                >
+                  <SiInstagram className="h-3.5 w-3.5 text-[#E4405F]" />
+                  <span>Instagram Insights</span>
+                  <ExternalLink className="h-3 w-3 opacity-70" />
+                </a>
+              )}
+
+              {/* SEPARATOR IF BOTH ARE SHOWN */}
+              {activeView === "schedule" && (
+                <span className="text-muted-foreground/50">·</span>
+              )}
+
+              {/* TIKTOK SOURCE */}
+              {(activeView === "schedule" || platform === "tiktok") && (
+                <a
+                  href="https://www.tiktok.com/tiktokstudio/analytics"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-semibold text-foreground hover:text-primary hover:underline transition-colors cursor-pointer"
+                  title="Buka dashboard resmi TikTok Studio Analytics"
+                >
+                  <SiTiktok className="h-3.5 w-3.5 text-zinc-900" />
+                  <span>TikTok Analytics</span>
+                  <ExternalLink className="h-3 w-3 opacity-70" />
+                </a>
+              )}
+            </div>
           </div>
         </footer>
       </SidebarInset>
